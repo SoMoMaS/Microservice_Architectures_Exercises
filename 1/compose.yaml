@@ -1,4 +1,11 @@
 services:
+  nodejsapi:
+    build:
+      context: ./node/
+      dockerfile: Dockerfile
+    image: nodejsapi
+    ports: 
+      - "8082:8080"
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -10,6 +17,8 @@ services:
     volumes:
       - ./prometheus:/etc/prometheus
       - prom_data:/prometheus
+    depends_on:
+      - nodejsapi
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -21,5 +30,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=grafana
     volumes:
       - ./grafana:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
 volumes:
   prom_data:
