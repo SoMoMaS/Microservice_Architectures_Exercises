@@ -1,33 +1,50 @@
 'use strict';
 
-const express = require('express');
-const promBundle = require("express-prom-bundle");
+// const express = require('express');
+// const promBundle = require("express-prom-bundle");
 
 // Constants
 const PORT = 8080;
 const HOST = '0.0.0.0';
 
-// App
+const express = require('express');
+const client = require('prom-client');
+
 const app = express();
 
-// Add the options to the prometheus middleware most option are for http_request_duration_seconds histogram metric
-const metricsMiddleware = promBundle({
-  includeMethod: true, 
-  includePath: true, 
-  includeStatusCode: true, 
-  includeUp: true,
-  customLabels: {project_name: 'prometheus', project_type: 'test_metrics_labels'},
-  promClient: {
-      collectDefaultMetrics: {
-      }
-    }
+let collectDefaultMetrics = client.collectDefaultMetrics;
+const register = new client.Registry();
+
+// Create custom metrics
+const requestPerFetch = new client.Counter({
+    name: "requestPerFetch",
+    help: "Custom counter: requestPerFetch for my application",
 });
 
-// add the prometheus middleware to all routes
-app.use(metricsMiddleware)
+const lifetimeRequests = new client.Counter({
+  name: "lifetimeRequests",
+  help: "Custom counter: lifetimeRequests for my application",
+});
 
+// Add your custom metric to the registry
+register.registerMetric(requestPerFetch);
+register.registerMetric(lifetimeRequests);
+
+
+client.collectDefaultMetrics({
+    app: 'node-application-monitoring-app',
+    prefix: 'node_',
+    timeout: 10000,
+    gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5],
+    register
+});
+
+// Create a route to expose /
 app.get('/', (req, res) => {
-  res.send('<h1>Didn\'t melt fairer keepsakes since Fellowship elsewhere.</h1>\n' +
+  requestPerFetch.inc();
+  lifetimeRequests.inc();
+ console.log(register.metrics());
+ res.send('<h1>Didn\'t melt fairer keepsakes since Fellowship elsewhere.</h1>\n' +
       '<p>Woodlands payment Osgiliath tightening. Barad-dur follow belly comforts tender tough bell? Many that live deserve death. Some that die deserve life. Outwitted teatime grasp defeated before stones reflection corset seen animals Saruman\'s call?</p>\n' +
       '<h2>Tad survive ensnare joy mistake courtesy Bagshot Row.</h2>\n' +
       '<p>Ligulas step drops both? You shall not pass! Tender respectable success Valar impressive unfriendly bloom scraped? Branch hey-diddle-diddle pony trouble\'ll sleeping during jump Narsil.</p>\n' +
@@ -274,6 +291,12 @@ app.get('/', (req, res) => {
       '    </div>\n' +
       '  </fieldset>\n' +
       '</form>');
+});
+
+app.get('/metrics', async (req, res) => {
+    res.setHeader('Content-Type', register.contentType);
+    res.send(await register.metrics());
+    requestPerFetch.reset();
 });
 
 app.listen(PORT, HOST, () => {
