@@ -17,4 +17,4 @@ scrape_configs:
   metrics_path: /metrics
   scheme: http
   static_configs:
-  - targets: ["docker.for.win.localhost:8082"]
+  - targets: ["docker.for.win.localhost:8082", "docker.for.mac.localhost:8082", "localhost:8082"]

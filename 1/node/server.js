@@ -16,7 +16,6 @@ const metricsMiddleware = promBundle({
   includePath: true, 
   includeStatusCode: true, 
   includeUp: true,
-  httpDurationMetricName: "asd",
   customLabels: {project_name: 'prometheus', project_type: 'test_metrics_labels'},
   promClient: {
       collectDefaultMetrics: {
