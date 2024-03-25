@@ -12,3 +12,9 @@ In localhost:3000 you can find Grafana running. The default user is admin and th
 
 Stand in the root of the project and run docker compose up.
 If you have saved the Grafana dashboard, all the visualizations will be visible, if you have not saved it, you will have to configure it again. 
+
+# Team members:
+
+- Chao Florencia Cecilia
+- De Luca Juan Manuel
+- Molnar Soma
